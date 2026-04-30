@@ -1,340 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expense & Budget Visualizer</title>
+  <link rel="stylesheet" href="Style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <header class="app-header">
+      <h1>💰 Expense & Budget Visualizer</h1>
+      <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">🌙</button>
+    </header>
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
-:root{--bg:#07070f;--card:rgba(255,255,255,0.04);--card-b:rgba(255,255,255,0.08);--card-h:rgba(255,255,255,0.07);--accent:#8b5cf6;--accent-dim:rgba(139,92,246,0.18);--gold:#f59e0b;--green:#10b981;--red:#ef4444;--text:#f0eeff;--text2:rgba(240,238,255,0.5);--text3:rgba(240,238,255,0.25);--r:20px;--r2:12px}
-[data-theme=light]{--bg:#f4f2ff;--card:rgba(255,255,255,0.78);--card-b:rgba(139,92,246,0.13);--card-h:rgba(255,255,255,0.95);--accent-dim:rgba(139,92,246,0.09);--text:#160f30;--text2:rgba(22,15,48,0.55);--text3:rgba(22,15,48,0.3)}
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .35s,color .35s;overflow-x:hidden;position:relative}
-.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
-.o1{width:600px;height:600px;top:-180px;left:-180px;background:radial-gradient(circle,rgba(139,92,246,.15),transparent 65%)}
-.o2{width:450px;height:450px;bottom:-130px;right:-130px;background:radial-gradient(circle,rgba(245,158,11,.11),transparent 65%)}
-.o3{width:320px;height:320px;top:45%;right:8%;background:radial-gradient(circle,rgba(16,185,129,.09),transparent 65%);animation:drift 9s ease-in-out infinite}
-@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-28px)}}
-.app{position:relative;z-index:1;max-width:1020px;margin:0 auto;padding:36px 22px 70px}
+    <section class="balance-card">
+      <p class="balance-label">TOTAL BALANCE</p>
+      <h2 class="balance-amount" id="totalBalance">Rp 0</h2>
+    </section>
 
-/* HEADER */
-.hdr{display:flex;flex-direction:column;align-items:center;text-align:center;padding:50px 0 44px;position:relative}
-.hdr-r{position:absolute;top:50px;right:0;display:flex;gap:9px}
-.ico{width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--card-b);color:var(--text2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s;backdrop-filter:blur(16px)}
-.ico:hover{background:var(--card-h);border-color:var(--accent);color:var(--accent);transform:scale(1.08)}
-.uchip{display:inline-flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--card-b);border-radius:40px;padding:5px 17px 5px 6px;cursor:pointer;margin-bottom:26px;transition:all .2s;backdrop-filter:blur(16px)}
-.uchip:hover{background:var(--card-h);border-color:var(--accent)}
-.uav{width:29px;height:29px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--gold));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
-.unm{font-size:13px;font-weight:500;color:var(--text2)}
-#clock{font-family:'JetBrains Mono',monospace;font-size:clamp(56px,9vw,90px);font-weight:600;letter-spacing:-4px;line-height:1;background:linear-gradient(140deg,var(--text) 20%,var(--accent) 60%,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-#dt{font-size:12px;color:var(--text2);letter-spacing:2.5px;text-transform:uppercase;margin-top:9px}
-#greet{font-size:clamp(22px,3vw,32px);font-weight:700;margin-top:9px;letter-spacing:-.5px}
-#greet em{font-style:normal;color:var(--accent)}
+    <section class="card form-card">
+      <h3>Add Transaction</h3>
+      <div class="form-group">
+        <label for="itemName">Item Name</label>
+        <input type="text" id="itemName" placeholder="e.g. Nasi Goreng" />
+      </div>
+      <div class="form-group">
+        <label for="amount">Amount (Rp)</label>
+        <input type="number" id="amount" placeholder="e.g. 15000" min="0" />
+      </div>
+      <div class="form-group">
+        <label for="category">Category</label>
+        <div class="category-row">
+          <select id="category"></select>
+          <button class="btn-add-cat" id="addCatBtn" title="Add custom category">＋</button>
+        </div>
+      </div>
+      <div class="form-group custom-cat-row hidden" id="customCatRow">
+        <input type="text" id="customCatInput" placeholder="New category name..." />
+        <button class="btn-save-cat" id="saveCatBtn">Save</button>
+      </div>
+      <button class="btn-primary" id="addBtn">Add Transaction</button>
+    </section>
 
-/* GRID */
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.full{grid-column:1/-1}
-@media(max-width:620px){.grid{grid-template-columns:1fr}.full{grid-column:1}#clock{font-size:52px}}
-
-/* CARD */
-.card{background:var(--card);border:1px solid var(--card-b);border-radius:var(--r);padding:26px;backdrop-filter:blur(22px);transition:border-color .25s,transform .25s,background .25s;position:relative;overflow:hidden}
-.card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent)}
-.card:hover{background:var(--card-h);border-color:rgba(139,92,246,.3);transform:translateY(-2px)}
-.cl{font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:20px;display:flex;align-items:center;gap:8px}
-.cldot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
-
-/* TIMER */
-.tw{display:flex;flex-direction:column;align-items:center;gap:13px}
-.tring{position:relative;width:155px;height:155px}
-.tring svg{transform:rotate(-90deg);width:155px;height:155px}
-.tring circle{fill:none;stroke-width:7}
-.rbg{stroke:rgba(255,255,255,.05)}
-.rprog{stroke:url(#g);stroke-linecap:round;transition:stroke-dashoffset 1s linear}
-.tinn{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-#ttime{font-family:'JetBrains Mono',monospace;font-size:27px;font-weight:600;letter-spacing:-1px;color:var(--text)}
-#tst{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);margin-top:3px}
-#tst.run{color:var(--accent);animation:blink 1.5s ease-in-out infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.22}}
-.tbtns{display:flex;gap:8px}
-.tsetrow{display:flex;align-items:center;gap:8px;margin-top:1px}
-.tsetrow label{font-size:11px;color:var(--text3)}
-.tsetrow input{width:50px;background:rgba(255,255,255,.05);border:1px solid var(--card-b);border-radius:8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;padding:5px 8px;text-align:center;outline:none;transition:border-color .2s}
-.tsetrow input:focus{border-color:var(--accent)}
-
-/* BUTTONS */
-.btn{font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;padding:8px 18px;border-radius:10px;border:1px solid var(--card-b);background:rgba(255,255,255,.05);color:var(--text2);cursor:pointer;transition:all .18s;white-space:nowrap}
-.btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);color:var(--text);transform:translateY(-1px)}
-.btnp{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 4px 20px var(--accent-dim)}
-.btnp:hover{background:#7c3aed;border-color:#7c3aed;color:#fff;box-shadow:0 6px 28px rgba(139,92,246,.32)}
-.btnsm{padding:6px 13px;font-size:12px}
-.bdel{background:transparent;border:none;color:var(--text3);padding:0;width:27px;height:27px;border-radius:7px;font-size:14px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
-.bdel:hover{background:rgba(239,68,68,.15);color:var(--red)}
-.bedit{background:transparent;border:none;color:var(--text3);padding:0;width:27px;height:27px;border-radius:7px;font-size:13px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
-.bedit:hover{background:rgba(139,92,246,.15);color:var(--accent)}
-
-/* INPUTS */
-input[type=text],input[type=url]{font-family:'Outfit',sans-serif;font-size:14px;background:rgba(255,255,255,.05);border:1px solid var(--card-b);border-radius:10px;padding:9px 13px;color:var(--text);outline:none;transition:border-color .2s,background .2s;width:100%}
-input[type=text]:focus,input[type=url]:focus{border-color:var(--accent);background:rgba(139,92,246,.06)}
-input::placeholder{color:var(--text3)}
-
-/* TASKS */
-.addrow{display:flex;gap:8px;margin-bottom:12px}
-.addrow input{flex:1}
-.progwrap{margin-bottom:12px}
-.proginfo{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:5px}
-.proginfo strong{color:var(--text2);font-family:'JetBrains Mono',monospace;font-weight:600}
-.progtrack{height:4px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
-.progfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:3px;transition:width .45s ease}
-.sortbar{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap}
-.sp{font-family:'Outfit',sans-serif;font-size:11px;font-weight:500;padding:4px 11px;border-radius:30px;border:1px solid var(--card-b);background:transparent;color:var(--text3);cursor:pointer;transition:all .15s}
-.sp:hover,.sp.on{border-color:var(--accent);background:var(--accent-dim);color:var(--accent)}
-.tlist{list-style:none;display:flex;flex-direction:column;gap:5px;max-height:280px;overflow-y:auto;padding-right:3px}
-.tlist::-webkit-scrollbar{width:3px}
-.tlist::-webkit-scrollbar-thumb{background:rgba(139,92,246,.3);border-radius:3px}
-.ti{display:flex;align-items:center;gap:9px;padding:10px 13px;border-radius:var(--r2);border:1px solid transparent;background:rgba(255,255,255,.03);transition:all .18s;animation:pop .2s cubic-bezier(.34,1.56,.64,1)}
-@keyframes pop{from{opacity:0;transform:scale(.93) translateY(-5px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.ti:hover{background:rgba(255,255,255,.06);border-color:var(--card-b)}
-.chk{width:17px;height:17px;flex-shrink:0;border-radius:5px;border:1.5px solid rgba(139,92,246,.45);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;position:relative}
-.chk.on{background:var(--accent);border-color:var(--accent)}
-.chk.on::after{content:'';width:4px;height:8px;border:2px solid #fff;border-left:none;border-top:none;transform:rotate(45deg) translate(-1px,-1px);position:absolute}
-.ttxt{flex:1;font-size:14px;color:var(--text);word-break:break-word;cursor:pointer;transition:color .15s}
-.ttxt.done{text-decoration:line-through;color:var(--text3)}
-.tedin{flex:1;background:transparent;border:none;border-bottom:1px solid var(--accent);color:var(--text);font-size:14px;font-family:'Outfit',sans-serif;outline:none;padding:2px 0}
-.tacts{display:flex;gap:3px;flex-shrink:0}
-.empty{text-align:center;color:var(--text3);font-size:13px;padding:26px 0;line-height:2.2}
-
-/* LINKS */
-.lkadd{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.lknm{max-width:145px;flex-shrink:0}
-.lkurl{flex:1;min-width:90px}
-.lkgrid{display:flex;flex-wrap:wrap;gap:8px}
-.lk{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:30px;border:1px solid var(--card-b);background:rgba(255,255,255,.04);color:var(--text);text-decoration:none;font-size:13px;font-weight:500;transition:all .2s}
-.lk:hover{border-color:var(--accent);background:var(--accent-dim);transform:translateY(-2px)}
-.lk img{border-radius:3px;flex-shrink:0}
-.lkrm{width:15px;height:15px;background:rgba(255,255,255,.1);border:none;border-radius:50%;color:var(--text3);cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;margin-left:2px;transition:all .15s}
-.lkrm:hover{background:var(--red);color:#fff}
-
-/* MODAL */
-.mbg{position:fixed;inset:0;background:rgba(7,7,15,.82);backdrop-filter:blur(10px);z-index:300;display:flex;align-items:center;justify-content:center;animation:fi .2s}
-.mbg.hidden{display:none}
-@keyframes fi{from{opacity:0}to{opacity:1}}
-.mbox{background:#100f1e;border:1px solid rgba(139,92,246,.38);border-radius:22px;padding:36px;width:min(400px,92vw);box-shadow:0 0 90px rgba(139,92,246,.22);animation:si .22s cubic-bezier(.34,1.56,.64,1)}
-@keyframes si{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
-.mttl{font-size:20px;font-weight:700;margin-bottom:5px}
-.msub{font-size:13px;color:var(--text2);margin-bottom:20px}
-.macts{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
-</style>
-
-<div class="orb o1"></div>
-<div class="orb o2"></div>
-<div class="orb o3"></div>
-
-<div class="mbg hidden" id="modal">
-  <div class="mbox">
-    <div class="mttl">Siapa namamu?</div>
-    <div class="msub">Namamu akan muncul di sapaan harian.</div>
-    <input type="text" id="nmin" placeholder="Masukkan namamu..." maxlength="30">
-    <div class="macts">
-      <button class="btn btnsm" onclick="closeModal()">Batal</button>
-      <button class="btn btnp btnsm" onclick="saveName()">Simpan</button>
-    </div>
-  </div>
-</div>
-
-<div class="app">
-  <header class="hdr">
-    <div class="hdr-r">
-      <button class="ico" id="thbtn" onclick="toggleTheme()" title="Toggle tema">☀️</button>
-    </div>
-    <div class="uchip" onclick="openModal()">
-      <div class="uav" id="avini">?</div>
-      <span class="unm" id="chipnm">Siapa namamu?</span>
-    </div>
-    <div id="clock">00:00:00</div>
-    <div id="dt">Memuat...</div>
-    <div id="greet">Selamat Datang 👋</div>
-  </header>
-
-  <div class="grid">
-    <!-- TIMER -->
-    <div class="card">
-      <div class="cl"><span class="cldot"></span>Focus Timer</div>
-      <div class="tw">
-        <div class="tring">
-          <svg viewBox="0 0 155 155">
-            <defs>
-              <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#8b5cf6"/>
-                <stop offset="100%" stop-color="#f59e0b"/>
-              </linearGradient>
-            </defs>
-            <circle class="rbg" cx="77.5" cy="77.5" r="67"/>
-            <circle class="rprog" id="rprog" cx="77.5" cy="77.5" r="67" stroke-dasharray="421" stroke-dashoffset="0"/>
-          </svg>
-          <div class="tinn">
-            <div id="ttime">25:00</div>
-            <div id="tst">SIAP</div>
+    <div class="main-content">
+      <section class="card list-card">
+        <div class="list-header">
+          <h3>Transactions</h3>
+          <div class="sort-row">
+            <label for="sortSelect">Sort:</label>
+            <select id="sortSelect">
+              <option value="default">Latest</option>
+              <option value="amount-asc">Amount ↑</option>
+              <option value="amount-desc">Amount ↓</option>
+              <option value="category">Category</option>
+            </select>
           </div>
         </div>
-        <div class="tbtns">
-          <button class="btn btnp btnsm" onclick="startT()">▶ Mulai</button>
-          <button class="btn btnsm" onclick="stopT()">⏸ Stop</button>
-          <button class="btn btnsm" onclick="resetT()">↺ Reset</button>
+        <div class="transaction-list" id="transactionList">
+          <p class="empty-state">No transactions yet. Add one above!</p>
         </div>
-        <div class="tsetrow">
-          <label>Menit:</label>
-          <input type="number" id="tmin" min="1" max="120" value="25">
-          <button class="btn btnsm" onclick="resetT()">Set</button>
+      </section>
+
+      <section class="card chart-card">
+        <h3>Spending by Category</h3>
+        <div class="chart-wrapper">
+          <canvas id="spendingChart"></canvas>
+          <p class="empty-state hidden" id="chartEmpty">No data to display yet.</p>
         </div>
-      </div>
-    </div>
-
-    <!-- TASKS -->
-    <div class="card">
-      <div class="cl"><span class="cldot"></span>Tugas</div>
-      <div class="addrow">
-        <input type="text" id="taskin" placeholder="Tambah tugas baru..." maxlength="120">
-        <button class="btn btnp btnsm" onclick="addTask()">+ Tambah</button>
-      </div>
-      <div class="progwrap">
-        <div class="proginfo"><span>Progress hari ini</span><strong id="progtxt">0 / 0</strong></div>
-        <div class="progtrack"><div class="progfill" id="progfill" style="width:0%"></div></div>
-      </div>
-      <div class="sortbar">
-        <button class="sp on" data-s="def" onclick="setSort('def')">Default</button>
-        <button class="sp" data-s="az" onclick="setSort('az')">A→Z</button>
-        <button class="sp" data-s="todo" onclick="setSort('todo')">Belum</button>
-        <button class="sp" data-s="done" onclick="setSort('done')">Selesai</button>
-      </div>
-      <ul class="tlist" id="tlist"></ul>
-    </div>
-
-    <!-- QUICK LINKS -->
-    <div class="card full">
-      <div class="cl"><span class="cldot"></span>Quick Links</div>
-      <div class="lkadd">
-        <input type="text" class="lknm" id="lknm" placeholder="Nama link...">
-        <input type="url" class="lkurl" id="lkurl" placeholder="https://...">
-        <button class="btn btnp btnsm" onclick="addLink()">+ Tambah</button>
-      </div>
-      <div class="lkgrid" id="lkgrid"></div>
+      </section>
     </div>
   </div>
-</div>
 
-<script>
-const S={
-  tasks:[],
-  links:[{id:1,name:'Google',url:'https://google.com'},{id:2,name:'Gmail',url:'https://mail.google.com'},{id:3,name:'YouTube',url:'https://youtube.com'},{id:4,name:'GitHub',url:'https://github.com'}],
-  theme:'dark',name:'',mins:25,
-  timer:{on:false,secs:0,total:0,iv:null},
-  sort:'def',editId:null
-};
-try{const t=localStorage.getItem('tasks');if(t)S.tasks=JSON.parse(t)}catch(e){}
-try{const l=localStorage.getItem('links');if(l)S.links=JSON.parse(l)}catch(e){}
-try{const th=localStorage.getItem('theme');if(th)S.theme=th}catch(e){}
-try{const n=localStorage.getItem('uname');if(n)S.name=n}catch(e){}
-try{const m=localStorage.getItem('pom');if(m)S.mins=parseInt(m)}catch(e){}
-
-function tick(){
-  const now=new Date(),pad=n=>String(n).padStart(2,'0');
-  document.getElementById('clock').textContent=`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-  const days=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-  const months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-  document.getElementById('dt').textContent=`${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-  const h=now.getHours();
-  let g='Selamat Malam';
-  if(h>=5&&h<12)g='Selamat Pagi';else if(h>=12&&h<15)g='Selamat Siang';else if(h>=15&&h<18)g='Selamat Sore';
-  document.getElementById('greet').innerHTML=g+(S.name?`, <em>${S.name}</em>`:'')+'  👋';
-}
-tick(); setInterval(tick,1000);
-
-function applyTheme(){
-  document.body.setAttribute('data-theme',S.theme);
-  document.getElementById('thbtn').textContent=S.theme==='dark'?'☀️':'🌙';
-}
-function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';try{localStorage.setItem('theme',S.theme)}catch(e){}applyTheme();}
-applyTheme();
-
-function updateName(){
-  const a=document.getElementById('avini'),n=document.getElementById('chipnm');
-  if(S.name){a.textContent=S.name.slice(0,2).toUpperCase();n.textContent=S.name;}
-  else{a.textContent='?';n.textContent='Siapa namamu?';}
-}
-function openModal(){document.getElementById('nmin').value=S.name;document.getElementById('modal').classList.remove('hidden');setTimeout(()=>document.getElementById('nmin').focus(),80);}
-function closeModal(){document.getElementById('modal').classList.add('hidden');}
-function saveName(){S.name=document.getElementById('nmin').value.trim();try{localStorage.setItem('uname',S.name)}catch(e){}updateName();closeModal();}
-updateName();
-
-const CIRC=2*Math.PI*67;
-function initTimer(){S.timer.secs=S.mins*60;S.timer.total=S.mins*60;document.getElementById('tmin').value=S.mins;renderTimer();}
-function renderTimer(){
-  const{secs,total,on}=S.timer;
-  document.getElementById('ttime').textContent=`${String(Math.floor(secs/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`;
-  const off=CIRC*(1-(total>0?secs/total:1));
-  const rp=document.getElementById('rprog');
-  rp.style.strokeDasharray=CIRC;rp.style.strokeDashoffset=off;
-  const st=document.getElementById('tst');
-  if(on){st.textContent='FOKUS';st.classList.add('run');}
-  else if(secs===total){st.textContent='SIAP';st.classList.remove('run');}
-  else if(secs===0){st.textContent='SELESAI';st.classList.remove('run');}
-  else{st.textContent='JEDA';st.classList.remove('run');}
-}
-function startT(){
-  if(S.timer.on)return;if(S.timer.secs<=0)resetT();
-  S.timer.on=true;
-  S.timer.iv=setInterval(()=>{
-    if(S.timer.secs>0){S.timer.secs--;renderTimer();}
-    else{clearInterval(S.timer.iv);S.timer.on=false;renderTimer();beep();}
-  },1000);renderTimer();
-}
-function stopT(){clearInterval(S.timer.iv);S.timer.on=false;renderTimer();}
-function resetT(){
-  clearInterval(S.timer.iv);S.timer.on=false;
-  const v=parseInt(document.getElementById('tmin').value)||25;
-  S.mins=v;try{localStorage.setItem('pom',v)}catch(e){}
-  S.timer.secs=v*60;S.timer.total=v*60;renderTimer();
-}
-function beep(){try{const c=new(window.AudioContext||window.webkitAudioContext)();[0,.35,.7].forEach(d=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;o.type='sine';g.gain.setValueAtTime(0.35,c.currentTime+d);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d+0.4);o.start(c.currentTime+d);o.stop(c.currentTime+d+0.45);});}catch(e){}}
-initTimer();
-
-const sv=()=>{try{localStorage.setItem('tasks',JSON.stringify(S.tasks))}catch(e){}};
-const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-function getSorted(){const t=[...S.tasks];if(S.sort==='az')return t.sort((a,b)=>a.text.localeCompare(b.text));if(S.sort==='done')return t.sort((a,b)=>b.done-a.done);if(S.sort==='todo')return t.sort((a,b)=>a.done-b.done);return t;}
-
-function addTask(){
-  const inp=document.getElementById('taskin'),txt=inp.value.trim();if(!txt)return;
-  if(S.tasks.some(t=>t.text.toLowerCase()===txt.toLowerCase())){inp.style.borderColor='var(--red)';inp.placeholder='Tugas sudah ada!';setTimeout(()=>{inp.style.borderColor='';inp.placeholder='Tambah tugas baru...';},1600);return;}
-  S.tasks.push({id:Date.now(),text:txt,done:false});sv();inp.value='';renderTasks();
-}
-function delTask(id){S.tasks=S.tasks.filter(t=>t.id!==id);sv();renderTasks();}
-function toggleTask(id){const t=S.tasks.find(t=>t.id===id);if(t){t.done=!t.done;sv();renderTasks();}}
-function editTask(id){S.editId=id;renderTasks();}
-function saveEdit(id){const inp=document.getElementById('ed'+id);if(!inp)return;const v=inp.value.trim();if(v){const t=S.tasks.find(t=>t.id===id);if(t)t.text=v;sv();}S.editId=null;renderTasks();}
-
-function renderTasks(){
-  const list=document.getElementById('tlist'),tasks=getSorted();
-  const done=S.tasks.filter(t=>t.done).length,total=S.tasks.length,pct=total?Math.round(done/total*100):0;
-  document.getElementById('progtxt').textContent=`${done} / ${total}`;
-  document.getElementById('progfill').style.width=pct+'%';
-  if(!tasks.length){list.innerHTML='<li class="empty">✦ Tidak ada tugas<br><span style="font-size:11px">Tambahkan tugas pertamamu di atas</span></li>';return;}
-  list.innerHTML=tasks.map(t=>`<li class="ti"><div class="chk ${t.done?'on':''}" onclick="toggleTask(${t.id})"></div>${S.editId===t.id?`<input type="text" id="ed${t.id}" class="tedin" value="${esc(t.text)}" onblur="saveEdit(${t.id})" onkeydown="if(event.key==='Enter')saveEdit(${t.id});if(event.key==='Escape'){S.editId=null;renderTasks();}" autofocus>`:`<span class="ttxt ${t.done?'done':''}" ondblclick="editTask(${t.id})" title="Klik 2x untuk edit">${esc(t.text)}</span>`}<div class="tacts"><button class="bedit" onclick="editTask(${t.id})">✎</button><button class="bdel" onclick="delTask(${t.id})">✕</button></div></li>`).join('');
-}
-function setSort(v){S.sort=v;document.querySelectorAll('.sp').forEach(b=>b.classList.remove('on'));document.querySelector(`[data-s="${v}"]`).classList.add('on');renderTasks();}
-renderTasks();
-
-const svl=()=>{try{localStorage.setItem('links',JSON.stringify(S.links))}catch(e){}};
-function addLink(){
-  const nm=document.getElementById('lknm').value.trim();let url=document.getElementById('lkurl').value.trim();if(!nm||!url)return;
-  if(!/^https?:\/\//i.test(url))url='https://'+url;
-  S.links.push({id:Date.now(),name:nm,url});svl();document.getElementById('lknm').value='';document.getElementById('lkurl').value='';renderLinks();
-}
-function removeLink(id){S.links=S.links.filter(l=>l.id!==id);svl();renderLinks();}
-function renderLinks(){
-  const g=document.getElementById('lkgrid');
-  if(!S.links.length){g.innerHTML='<span style="color:var(--text3);font-size:13px">Belum ada link.</span>';return;}
-  g.innerHTML=S.links.map(l=>`<a href="${l.url}" target="_blank" rel="noopener" class="lk"><img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(l.url)}&sz=16" width="16" height="16" onerror="this.style.display='none'">${esc(l.name)}<button class="lkrm" onclick="event.preventDefault();removeLink(${l.id})">×</button></a>`).join('');
-}
-renderLinks();
-
-document.getElementById('taskin').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
-document.getElementById('lkurl').addEventListener('keydown',e=>{if(e.key==='Enter')addLink();});
-document.getElementById('nmin').addEventListener('keydown',e=>{if(e.key==='Enter')saveName();if(e.key==='Escape')closeModal();});
-document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
-document.getElementById('tmin').addEventListener('change',()=>{if(!S.timer.on)resetT();});
-</script>
+  <script src="script.java"></script>
+</body>
+</html>
